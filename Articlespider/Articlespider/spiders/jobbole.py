@@ -7,6 +7,8 @@ from urllib import parse
 import os
 import sys
 
+
+
 from items import JobboleArticleItem,ArticleItemLoader
 from utils.common import get_md5
 import datetime
