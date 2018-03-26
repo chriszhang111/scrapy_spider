@@ -9,6 +9,8 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+import sys
 BOT_NAME = 'Articlespider'
 
 SPIDER_MODULES = ['Articlespider.spiders']
@@ -65,8 +67,19 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'Articlespider.pipelines.ArticlespiderPipeline': 300,
+   #'Articlespider.pipelines.JsonExporterPipeline': 2,
+   #'scrapy.pipelines.images.ImagesPipeline': 1,
+   #'Articlespider.pipelines.ArticleImageStore': 1,
+   'Articlespider.pipelines.MysqlTwistedPipeline': 2,
 }
+IMAGES_URLS_FIELD = "front_img_url"
+
+project_dir = os.path.abspath(os.path.dirname(__file__))
+IMAGES_STORE = os.path.join(project_dir,'images')
+
+IMAGES_MIN_HEIGHT = 100
+IMAGES_MIN_WIDTH = 100
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -88,3 +101,9 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+MYSQL_HOST = "localhost"
+MYSQL_DBNAME = "article_spider"
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "31415926"
+
