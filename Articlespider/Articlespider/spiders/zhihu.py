@@ -1,23 +1,99 @@
 # -*- coding: utf-8 -*-
+import json
+import re
+
 import scrapy
 
-from items import ArticleItemLoader
+from items import ArticleItemLoader, ZhihuQuestion,ZhihuAnswer
 from selenium import webdriver
 
 import  os
+from urllib import parse
+from scrapy.loader import ItemLoader
 
 driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
 # driver.get("https://www.zhihu.com/signin?next=%2F")
 
 class ZhihuSpider(scrapy.Spider):
+    start_answer_url = "https://www.zhihu.com/api/v4/questions/{0}/answers?sort_by=default&include=data%5B%2A%5D.is_normal%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccollapsed_counts%2Creviewing_comments_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Crelationship.is_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cupvoted_followees%3Bdata%5B%2A%5D.author.is_blocking%2Cis_blocked%2Cis_followed%2Cvoteup_count%2Cmessage_thread_token%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics&limit={1}&offset={2}"
     name = 'zhihu'
     allowed_domains = ['www.zhihu.com']
-    start_urls = ['http://www.zhihu.com/']
+    start_urls = ['http://www.zhihu.com/#signin']
+    client_id = 'c3cef7c66a1843f8b3a9e6a1e3160e20'
+    headers = {
+        'authorization': 'oauth ' + client_id,
+        'Host': 'www.zhihu.com',
+        'Origin': 'https://www.zhihu.com',
+        'Referer': 'https://www.zhihu.com/signup?next=%2F',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/63.0.3239.84 Safari/537.36'
+    }
 
 
     def parse(self, response):
-        pass
+        """
 
+        :param response:
+        :return:
+        """
+
+        all_urls = response.css("a::attr(href)").extract()
+        all_urls = [parse.urljoin(response.url,url) for url in all_urls]
+        all_urls = filter(lambda x:False if x.startwith("java") else True,all_urls)
+        for url in all_urls:
+            match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$).*",url)
+            if match_obj:
+                ####if matched ,then parse
+                request_url = match_obj.group(1)
+                question_id = match_obj.group(2)
+
+                yield scrapy.Request(url=request_url,meta={"question_id":question_id},headers=self.headers,callback=self.parse_question)
+
+            else:
+                ##dfs
+                yield scrapy.Request(url,headers=self.headers,callback=self.parse)
+
+
+    def parse_question(self,response):
+        """
+        deal with question page
+        :return:
+        """
+        question_itemloader = ItemLoader(ZhihuQuestion(),response=response)
+        question_itemloader.add_css("title","h1.QuestionHeader-title::text")
+        question_itemloader.add_css("content",".QuestionHeader-detail")
+        question_itemloader.add_value("url",response.url)
+        question_itemloader.add_value("zhihu_id", response.meta.get("question_id"))
+        question_itemloader.add_css("answer_num",".List-headerText span::text")
+        question_itemloader.add_css("comments_num",".QuestionHeader-Comment button::text")
+        question_itemloader.add_css("watch_user_num",".NumberBoard-itemValue::text")
+        question_itemloader.add_css("topics",".QuestionHeader-topics .Popover::text")
+
+        question_item = question_itemloader.load_item()
+
+
+
+        yield scrapy.Request(self.start_answer_url.format(response.meta.get("question_id"),20,20),callback=self.parse_answer)
+
+        yield question_item
+
+    def parse_answer(self,response):
+        ans_json = json.loads(response.text)
+        is_end = ans_json["paging"]["is_end"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ##do requests by selenium simulator
     def start_requests(self):
         driver.get('https://www.zhihu.com/signin?next=%2F')
 
@@ -28,7 +104,7 @@ class ZhihuSpider(scrapy.Spider):
         import time
         time.sleep(10)
         Cookies = driver.get_cookies()
-        print(Cookies)
+        #print(Cookies)
 
         cookie_dict = {}
         import pickle
@@ -37,8 +113,8 @@ class ZhihuSpider(scrapy.Spider):
             pickle.dump(cookie,f)
             f.close()
             cookie_dict[cookie['name']] = cookie['value']
-        driver.close()
-        return [scrapy.Request(url=self.start_urls[0],dont_filter=True,cookies=cookie_dict)]
+        ##driver.close()
+        return [scrapy.Request(url=self.start_urls[0],dont_filter=True,cookies=cookie_dict,headers=self.headers)]
 
 
 
