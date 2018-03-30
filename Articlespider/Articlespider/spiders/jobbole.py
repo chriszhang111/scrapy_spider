@@ -9,10 +9,13 @@ import sys
 
 
 
-from items import JobboleArticleItem,ArticleItemLoader
-from utils.common import get_md5
+
+
 import datetime
 from scrapy.loader import ItemLoader
+
+from items import ArticleItemLoader, JobboleArticleItem
+from utils.common import get_md5
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -58,7 +61,7 @@ class JobboleSpider(scrapy.Spider):
         """
 
         front_img_url = response.meta.get("front_img_url", None)
-        job_article_instance = JobboleArticleItem()
+        #job_article_instance = JobboleArticleItem()
         item_loader = ArticleItemLoader(item=JobboleArticleItem(),response=response)
         item_loader.add_css("title",".entry-header h1::text")
         item_loader.add_css("create_date","p.entry-meta-hide-on-mobile::text")

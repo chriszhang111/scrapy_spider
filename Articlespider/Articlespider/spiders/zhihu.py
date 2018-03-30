@@ -2,14 +2,17 @@
 import json
 import re
 
+import datetime
 import scrapy
 
-from items import ArticleItemLoader, ZhihuQuestion,ZhihuAnswer
+
 from selenium import webdriver
 
 import  os
 from urllib import parse
 from scrapy.loader import ItemLoader
+
+from items import ZhihuQuestion, ZhihuAnswer
 
 driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
 # driver.get("https://www.zhihu.com/signin?next=%2F")
@@ -72,13 +75,40 @@ class ZhihuSpider(scrapy.Spider):
 
 
 
-        yield scrapy.Request(self.start_answer_url.format(response.meta.get("question_id"),20,20),callback=self.parse_answer)
+        yield scrapy.Request(self.start_answer_url.format(response.meta.get("question_id"),20,0),callback=self.parse_answer,headers=self.headers)
 
         yield question_item
 
     def parse_answer(self,response):
         ans_json = json.loads(response.text)
         is_end = ans_json["paging"]["is_end"]
+        totals_answer = ans_json["paging"]["totals"]
+        next_url = ans_json["paging"]["next"]
+        ##extract answer
+
+        for answer in ans_json["data"]:
+            ans_item = ZhihuAnswer()
+            ans_item["zhihu_id"] = answer["id"]
+            ans_item["url"] = answer["url"]
+            ans_item["question_id"] = answer["question"]["id"]
+            ans_item["author_id"] = answer["author"].get("id",None)
+            ans_item["content"] = answer.get("content",None)
+            ans_item["praise_num"] = answer["voteup_count"]
+            ans_item["comments_num"] = answer["comment_count"]
+            ans_item["create_time"] = answer["created_time"]
+            ans_item["update_time"] = answer["updated_time"]
+            ans_item["crawl_time"] = datetime.datetime.now()
+            yield ans_item
+
+
+
+
+        if not is_end:
+            yield scrapy.Request(next_url,callback=self.parse_answer,headers=self.headers)
+
+
+
+
 
 
 

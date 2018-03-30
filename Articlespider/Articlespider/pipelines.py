@@ -78,15 +78,13 @@ class MysqlTwistedPipeline(object):
         print(failure)
 
     def do_insert(self,cursor,item):
-        insert_sql = """
-                insert into article(title,url,create_date,url_object,front_img_url,front_img_path,like_num,record_num,
-                comment_num,tags,content)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """
-        cursor.execute(insert_sql,(item["title"],item["url"],item["create_date"],item["url_object_id"],
-                                   item["front_img_url"],item.get("front_img_path",""),item["like_num"],item["record_num"],
-                                   item["comment_num"],item["tags"],item["content"]))
+        ###
 
+        insert_sql,params = item.get_insert_sql()
+
+
+
+        cursor.execute(insert_sql,params)
 
 
 

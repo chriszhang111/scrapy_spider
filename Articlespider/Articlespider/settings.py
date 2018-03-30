@@ -70,7 +70,7 @@ ITEM_PIPELINES = {
    #'Articlespider.pipelines.JsonExporterPipeline': 2,
    #'scrapy.pipelines.images.ImagesPipeline': 1,
    #'Articlespider.pipelines.ArticleImageStore': 1,
-   'Articlespider.pipelines.MysqlTwistedPipeline': 2,
+   #'Articlespider.pipelines.MysqlTwistedPipeline': 2,
 }
 IMAGES_URLS_FIELD = "front_img_url"
 
@@ -106,4 +106,8 @@ MYSQL_HOST = "localhost"
 MYSQL_DBNAME = "article_spider"
 MYSQL_USER = "root"
 MYSQL_PASSWORD = "31415926"
+import os,sys
 
+
+#print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+sys.path.insert(0,project_dir)
