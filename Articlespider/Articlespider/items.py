@@ -217,15 +217,15 @@ class LagouItem(scrapy.Item):
         insert_sql = """
             insert into lagou_job(url, url_object_id, title, salary, city, work_years, degree_need,
             job_type, publish_time, tags, job_advantage, job_desc, job_addr, company_name,
-            crawl_time, company_url,) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            crawl_time, company_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE salary=VALUES(salary), job_desc=VALUES(job_desc)
         """
         params = (
-            self["title"], self["url"], self["url_object_id"], self["salary"], self["job_city"],
-            self["work_years"], self["degree_need"], self["job_type"],
-            self["publish_time"], self["job_advantage"], self["job_desc"],
-            self["job_addr"], self["company_name"], self["company_url"],
-            self["job_addr"], self["crawl_time"].strftime("%Y-%m-%d"),
+            self["url"], self["url_object_id"], self["title"],self["salary"],
+            self["city"],self["work_years"], self["degree_need"], self["job_type"],
+            self["publish_time"],self["tags"],self["job_advantage"],
+            self["job_desc"],self["job_addr"], self["company_name"],
+            self["crawl_time"].strftime("%Y-%m-%d"),self["company_url"]
         )
 
         return insert_sql, params

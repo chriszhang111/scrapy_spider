@@ -54,9 +54,10 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'Articlespider.middlewares.ArticlespiderDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'Articlespider.middlewares.RandomUserAgentMiddleware': 543,
+   'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -70,7 +71,7 @@ ITEM_PIPELINES = {
    #'Articlespider.pipelines.JsonExporterPipeline': 2,
    #'scrapy.pipelines.images.ImagesPipeline': 1,
    #'Articlespider.pipelines.ArticleImageStore': 1,
-   #'Articlespider.pipelines.MysqlTwistedPipeline': 2,
+   'Articlespider.pipelines.MysqlTwistedPipeline': 2,
 }
 IMAGES_URLS_FIELD = "front_img_url"
 
@@ -111,3 +112,7 @@ import os,sys
 
 #print(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 sys.path.insert(0,project_dir)
+
+USER_AGENT_LIST = ["Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/63.0.3239.84 Safari/537.36',
+              'Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1']

@@ -7,12 +7,13 @@ import scrapy
 
 
 from selenium import webdriver
-
+from settings import USER_AGENT
 import  os
 from urllib import parse
 from scrapy.loader import ItemLoader
 
 from items import ZhihuQuestion, ZhihuAnswer
+import random
 
 driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
 # driver.get("https://www.zhihu.com/signin?next=%2F")
@@ -23,12 +24,14 @@ class ZhihuSpider(scrapy.Spider):
     allowed_domains = ['www.zhihu.com']
     start_urls = ['http://www.zhihu.com/#signin']
     client_id = 'c3cef7c66a1843f8b3a9e6a1e3160e20'
+    #rand_index = random.randint(0,len(USER_AGENT)-1)
+
     headers = {
         'authorization': 'oauth ' + client_id,
         'Host': 'www.zhihu.com',
         'Origin': 'https://www.zhihu.com',
         'Referer': 'https://www.zhihu.com/signup?next=%2F',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/63.0.3239.84 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1'
     }
 
 

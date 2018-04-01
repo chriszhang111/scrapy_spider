@@ -94,6 +94,7 @@ class MysqlTwistedPipeline(object):
 
 
 
+
 class ArticleImageStore(ImagesPipeline):
     def item_completed(self, results, item, info):
         img_file_path = ""
