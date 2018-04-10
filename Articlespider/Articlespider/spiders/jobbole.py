@@ -17,6 +17,8 @@ from scrapy.loader import ItemLoader
 from items import ArticleItemLoader, JobboleArticleItem
 from utils.common import get_md5
 
+
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
@@ -29,7 +31,11 @@ class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
     allowed_domains = ['jobbole.com']
     start_urls = ['http://blog.jobbole.com/all-posts/']
+    handle_httpstatus_list = [404,301,500]
+    custom_settings = {"COOKIES_ENABLED":True}
 
+    def __init__(self):
+        self.fail_urls = []
 
 
     def parse(self, response):
@@ -38,6 +44,10 @@ class JobboleSpider(scrapy.Spider):
         :param response: response
         :return:None
         """
+        if response.status == 404:
+            self.fail_urls.append(response.url)
+            self.crawler.stats.inc_value("failed_url")
+
         urls = response.css("#archive .floated-thumb .post-thumb a")
 
         for post_node in urls:

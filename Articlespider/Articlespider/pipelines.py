@@ -11,7 +11,8 @@ from scrapy.exporters import JsonItemExporter
 import MySQLdb
 import MySQLdb.cursors
 from twisted.enterprise import adbapi
-
+from models.es_types import Article
+from w3lib.html import remove_tags  ##remove tags from html
 
 
 class ArticlespiderPipeline(object):
@@ -88,21 +89,38 @@ class MysqlTwistedPipeline(object):
 
 
 
+class ElasticSearchPipeLine(object):
+    """
+    write data into elasticsearch
+    """
 
-
-
-
-
-
-
-class ArticleImageStore(ImagesPipeline):
-    def item_completed(self, results, item, info):
-        img_file_path = ""
-        if "front_img_url" in item:
-            for ok, value in results:
-                img_file_path = value.get("path", "")
-            item["front_img_path"] = img_file_path
+    def process_item(self,item,spider):
+        item.save_to_es()
         return item
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class ArticleImageStore(ImagesPipeline):
+#     def item_completed(self, results, item, info):
+#         img_file_path = ""
+#         if "front_img_url" in item:
+#             for ok, value in results:
+#                 img_file_path = value.get("path", "")
+#             item["front_img_path"] = img_file_path
+#         return item
 
 
 

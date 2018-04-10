@@ -16,6 +16,7 @@ def crawl_ips():
 
                }
     re = requests.get("http://www.xicidaili.com/wn/{0}".format(page),headers=headers)
+
     selector = Selector(text=re.text)
     all_trs = selector.css("#ip_list tr")
     for tr in all_trs:
@@ -100,10 +101,10 @@ class GetIp(object):
 
 
 
+if __name__ == "__main__":
 
-
-cla = GetIp()
-print(cla.get_random_ip())
+    cla = GetIp()
+    print(cla.get_random_ip())
 
 
 

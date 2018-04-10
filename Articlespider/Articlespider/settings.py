@@ -11,10 +11,20 @@
 
 import os
 import sys
+
+from scrapy.mail import MailSender
+
 BOT_NAME = 'Articlespider'
 
 SPIDER_MODULES = ['Articlespider.spiders']
 NEWSPIDER_MODULE = 'Articlespider.spiders'
+
+
+# # Enables scheduling storing requests queue in redis.
+# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+#
+# # Ensure all spiders share same duplicates filter through redis.
+# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -29,13 +39,13 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+# DOWNLOAD_DELAY = 0.5
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -56,7 +66,9 @@ ROBOTSTXT_OBEY = False
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'Articlespider.middlewares.RandomUserAgentMiddleware': 543,
-   'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+   # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    #'Articlespider.middlewares.RandomIpProxyMiddleware':542,
+   #  'Articlespider.middlewares.JSpageMiddleware': 1,
 }
 
 # Enable or disable extensions
@@ -68,10 +80,11 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   #'Articlespider.pipelines.JsonExporterPipeline': 2,
+   'Articlespider.pipelines.ElasticSearchPipeLine': 2,
    #'scrapy.pipelines.images.ImagesPipeline': 1,
    #'Articlespider.pipelines.ArticleImageStore': 1,
-   'Articlespider.pipelines.MysqlTwistedPipeline': 2,
+   #'Articlespider.pipelines.MysqlTwistedPipeline': 2,
+   #'scrapy_redis.pipelines.RedisPipeline': 300,
 }
 IMAGES_URLS_FIELD = "front_img_url"
 

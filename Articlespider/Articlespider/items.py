@@ -6,11 +6,47 @@
 # https://doc.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+from elasticsearch_dsl.connections import connections
 from scrapy.loader.processors import MapCompose,TakeFirst,Join
 import datetime
 from scrapy.loader import ItemLoader
 import re
 from w3lib.html import remove_tags
+
+from models.es_types import Article
+from models.es_lagou import LagouType
+es = connections.create_connection(Article._doc_type.using)
+
+
+def gen_suggest(index,info_tuple):
+    """
+    generate suggest word
+    :param index:
+    :param info_tuple:
+    :return:
+    """
+    used_words = set()
+    suggests = []
+
+    for text,weight in info_tuple:
+        if text:
+            words = es.indices.analyze(index=index,analyzer="ik_max_word",params={"filter":["lowercase"]},body=text)
+
+            analyzed_words = set([r["token"] for r in words["tokens"] if(len(r["token"])>1)])
+            new_words = analyzed_words-used_words
+        else:
+            new_words = set()
+        if new_words:
+            suggests.append({"input":list(new_words),"weight":weight})
+    return suggests
+
+
+
+
+
+
+
+
 
 def date_convert(value):
 
@@ -76,6 +112,28 @@ class JobboleArticleItem(scrapy.Item):
                         """
         params = (self.title,self.url,self.create_date,self.content)
         return insert_sql,params
+
+
+    def save_to_es(self):
+        article = Article()
+        article.title = self['title']
+        article.create_date = self['create_date']
+        article.url = self['url']
+        # article.url_object_id = item['url_object_id']
+        if "front_img_url" in self:
+            article.front_img_url = self['front_img_url']
+        # article.front_img_path = item['front_img_path']
+        article.like_num = self['like_num']
+        article.record_num = self['record_num']
+        article.comment_num = self['comment_num']
+        article.tags = self['tags']
+        article.content = remove_tags(self['content'])
+        article.meta.id = self['url_object_id']
+
+        article.suggest_ = gen_suggest(Article._doc_type.index,((article.title,10),(article.tags,7)))
+
+
+        article.save()
 
 class ZhihuQuestion(scrapy.Item):
     """
@@ -211,6 +269,30 @@ class LagouItem(scrapy.Item):
     company_name = scrapy.Field()
     company_url = scrapy.Field()
     crawl_time = scrapy.Field()
+
+
+
+    def save_to_es(self):
+        lagou = LagouType()
+        lagou.url = self["url"]
+        lagou.url_object_id = self["url_object_id"]
+        lagou.title = self["title"]
+        lagou.salary = self["salary"]
+        lagou.city = self["city"]
+        lagou.work_years = self["work_years"]
+        lagou.degree_need = self["degree_need"]
+        lagou.job_type = self["job_type"]
+        lagou.publish_time = self["publish_time"]
+        lagou.tags = self["tags"]
+        lagou.job_advantage = self["job_advantage"]
+        lagou.job_desc = self["job_desc"]
+        lagou.job_addr = self["job_addr"]
+        lagou.company_name = self["company_name"]
+        lagou.company_url = self["company_url"]
+        lagou.crawl_time = self["crawl_time"]
+
+        lagou.suggest_ = gen_suggest(lagou._doc_type.index,((lagou.title,10),(lagou.tags,7)))
+        lagou.save()
 
 
     def get_insert_sql(self):

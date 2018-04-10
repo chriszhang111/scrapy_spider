@@ -4,11 +4,13 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import os
 
+import time
 from scrapy import signals
 from fake_useragent import UserAgent
 from tools.crawl_ip import GetIp
-
+from selenium import webdriver
 class ArticlespiderSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -138,3 +140,30 @@ class ArticlespiderDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+from scrapy.http import HtmlResponse
+
+
+
+
+
+
+class JSpageMiddleware(object):
+    """
+    Use selenium to get Response
+    """
+
+
+    def process_request(self, request, spider):
+        if spider.name == "zhihu":
+
+            spider.browser.get(request.url)
+            #time.sleep(1)
+
+            return HtmlResponse(url=spider.browser.current_url,body=spider.browser.page_source,encoding="utf8",request=request)
+#
+#
+#
+#
+#

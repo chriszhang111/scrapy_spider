@@ -7,7 +7,7 @@ import scrapy
 
 
 from selenium import webdriver
-from settings import USER_AGENT
+
 import  os
 from urllib import parse
 from scrapy.loader import ItemLoader
@@ -15,8 +15,11 @@ from scrapy.loader import ItemLoader
 from items import ZhihuQuestion, ZhihuAnswer
 import random
 
-driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
+#driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
 # driver.get("https://www.zhihu.com/signin?next=%2F")
+from scrapy.xlib.pydispatch import dispatcher
+from scrapy import signals
+
 
 class ZhihuSpider(scrapy.Spider):
     start_answer_url = "https://www.zhihu.com/api/v4/questions/{0}/answers?sort_by=default&include=data%5B%2A%5D.is_normal%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccollapsed_counts%2Creviewing_comments_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Crelationship.is_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cupvoted_followees%3Bdata%5B%2A%5D.author.is_blocking%2Cis_blocked%2Cis_followed%2Cvoteup_count%2Cmessage_thread_token%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics&limit={1}&offset={2}"
@@ -34,6 +37,23 @@ class ZhihuSpider(scrapy.Spider):
         'User-Agent': 'Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1'
     }
 
+
+
+    def __init__(self):
+        self.path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))+"/tools/chromedriver"
+        self.browser = webdriver.Chrome(executable_path=self.path)
+        super(ZhihuSpider,self).__init__()
+        dispatcher.connect(self.spider_closed,signals.spider_closed)
+
+
+
+    def spider_closed(self,spider):
+        """
+        close chrome when spider closed
+        :param spider:
+        :return:
+        """
+        self.browser.quit()
 
     def parse(self, response):
         """
@@ -128,15 +148,15 @@ class ZhihuSpider(scrapy.Spider):
 
     ##do requests by selenium simulator
     def start_requests(self):
-        driver.get('https://www.zhihu.com/signin?next=%2F')
+        self.browser.get('https://www.zhihu.com/signin?next=%2F')
 
-        driver.find_element_by_css_selector(".Login-content input[name='username']").send_keys("869415122@qq.com")
-        driver.find_element_by_css_selector(".Login-content input[name='password']").send_keys("31415926")
-        driver.find_element_by_css_selector(".Button.SignFlow-submitButton.Button--primary.Button--blue").click()
+        self.browser.find_element_by_css_selector(".Login-content input[name='username']").send_keys("869415122@qq.com")
+        self.browser.find_element_by_css_selector(".Login-content input[name='password']").send_keys("31415926")
+        self.browser.find_element_by_css_selector(".Button.SignFlow-submitButton.Button--primary.Button--blue").click()
 
         import time
         time.sleep(10)
-        Cookies = driver.get_cookies()
+        Cookies = self.browser.get_cookies()
         #print(Cookies)
 
         cookie_dict = {}
